@@ -1,0 +1,24 @@
+#!/bin/bash
+
+####################################################
+# CREATION     : 2016-07-30
+# MODIFICATION : 2016-10-06
+
+# I3block's blocklet which:
+# - Display date
+# - On middle click displays calendar
+#
+# Optional:
+# - Gnome calendar
+#
+####################################################
+
+case $BLOCK_BUTTON in
+    2) /home/guano/.bin/system/runorfocus gnome-calendar ;;   # middle click
+esac
+
+date=$(date '+%a %d %b')
+
+echo "$date"
+echo "$date"
+echo

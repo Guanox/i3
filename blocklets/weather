@@ -1,0 +1,99 @@
+#!/usr/bin/env bash
+
+####################################################
+# CREATION     : 2016-07-08
+# MODIFICATION : 2016-08-18
+
+# I3block's blocklet which:
+# - Show current temperature
+
+# Requirements:
+# - curl
+# - forecast.io API KEY
+#
+####################################################
+
+# icons: https://erikflowers.github.io/weather-icons/
+declare -A state_icons=( \
+    ["clear-day"]="" \
+    ["clear-night"]="" \
+    ["rain"]="" \
+    ["snow"]="" \
+    ["sleet"]="" \
+    ["wind"]="" \
+    ["fog"]="" \
+    ["cloudy"]="" \
+    ["partly-cloudy-day"]="" \
+    ["partly-cloudy-night"]="" \
+    ["generic"]="generic" \
+    )
+
+declare -r APIKEY="d9429b52576d15e28428334fd4629817"
+
+declare -r PRECISION="0"
+
+function get_ip() {
+    current_ip=$(curl -s http://ipecho.net/plain; echo)
+}
+
+function get_geolocation_data() {
+    local geolocation_data=$(curl -s http://freegeoip.net/xml/${current_ip})
+
+    local city=$(echo ${geolocation_data} | grep -o -P -i "(?<=<City>).*(?=</City>)")
+    local latitude=$(echo ${geolocation_data} | grep -o -P -i "(?<=<Latitude>).*(?=</Latitude>)")
+    local longitude=$(echo ${geolocation_data} | grep -o -P -i "(?<=<Longitude>).*(?=</Longitude>)")
+
+    echo "${city}|${latitude}|${longitude}"
+}
+
+function getCurrWeather() {
+    local weather_data=$(curl --silent "https://api.forecast.io/forecast/${APIKEY}/${latitude},${longitude}")
+
+    local current_weather=$(echo "$weather_data" | grep -o -P -i "(?<=\"currently\":{)[^}]*")
+
+    local state=$(echo "$current_weather" | grep -o -P -i "(?<=\"icon\":\")[^\"]*")
+    local temperature=$(echo "$current_weather" | grep -o -P -i "(?<=\"temperature\":)[^\,]*")
+
+    # Convert to celcius and round
+    temperature=$(float_eval "( ( $temperature - 32 ) * 5 ) / 9")
+    temperature=$(round "$temperature" "$PRECISION")
+
+    echo "${state}|${temperature}°C"
+}
+
+function float_eval() {
+    local stat=0
+    local result=0.0
+    if [[ $# -gt 0 ]]; then
+        result=$(echo "scale=2; $*" | bc -q 2>/dev/null)
+        stat=$?
+        if [[ $stat -eq 0  &&  -z "$result" ]]; then stat=1; fi
+    fi
+    echo $result
+    #return $stat
+}
+
+function round() {
+    echo $(printf %.$2f $(echo "scale=$2;(((10^$2)*$1)+0.5)/(10^$2)" | bc))
+}
+
+get_ip
+
+# GET LOCATION DATA
+location_data=$(get_geolocation_data)
+city=$(echo "$location_data" | cut -d "|" -f 1)
+latitude=$(echo "$location_data" | cut -d "|" -f 2)
+longitude=$(echo "$location_data" | cut -d "|" -f 3)
+
+# GET WEATHER DATA
+weather_data=$(getCurrWeather)
+state=$(echo "$weather_data" | cut -d "|" -f 1 | tr " " "_")
+temp=$(echo "$weather_data" | cut -d "|" -f 2 | awk '{print $1 $2}')
+
+if [[ "${!state_icons[*]}" =~ $state ]]; then
+    icon=${state_icons[$state]}
+else
+    icon=${state_icons["generic"]}
+fi
+
+echo "<span foreground='#C9CCDB' rise='-20' font='Weather Icons'>$icon $temp</span>"

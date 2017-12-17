@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+
+ICON=''
+ENABLED_ICON=''
+COLOR_DEACTIVE="#D82871"
+SCRIPT_DIR="$( dirname "$0" )"
+
+is_up=0
+color="#C9CCDB"
+
+function toggle_enabled() {
+    is_enabled=$([ "$is_enabled" == 1 ] && echo 0 || echo 1)
+
+    # Yes I know this is impossible to debug
+    sed "\$s/.*/$is_enabled/" "$0" > "$SCRIPT_DIR/temp"
+    rm "$0"
+    mv "$SCRIPT_DIR/temp" "$0"
+    chmod u+x "$0"
+}
+
+if [[ $(pidof -x openvpn) ]]; then
+    is_up=1
+fi
+
+is_enabled=$(tail -n 1 "$0")
+
+case $BLOCK_BUTTON in
+    2) toggle_enabled ;; # middle click
+esac
+
+if [[ "$is_enabled" = "1" ]]; then
+    text=" $ENABLED_ICON"
+
+    # start if enabled and not running
+    if [[ $is_up != 1 ]]; then
+        vyprvpn connect &>/dev/null
+    fi
+else
+    # stop if disabled and running
+    if [[ $is_up = 1 ]]; then
+        vyprvpn disconnect &>/dev/null
+    fi
+fi
+
+text="$ICON vpn$text"
+
+# Output in json
+cat <<EOF
+{
+    "full_text": "${text}",
+    "color": "$color",
+    "background": "",
+    "border": "",
+    "border_left": 0,
+    "border_right": 0,
+    "border_up": 0,
+    "border_bottom": 0
+}
+EOF
+
+exit
+
+0

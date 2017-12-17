@@ -1,0 +1,8 @@
+core i3 programs:
+    - i3
+    - polybar
+    - i3lock-fancy
+
+desktop env programs:
+    - rofi
+

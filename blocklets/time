@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+####################################################
+# CREATION     : 2016-08-24
+# MODIFICATION : 2017-01-14
+#
+# Display of time which:
+# - Shows current time
+#
+# Requirements:
+# - date
+#
+####################################################
+
+HOME=$(date '+%H:%M')
+EST=$(TZ=America/New_York date '+%Z %H:%M')
+CT=$(TZ=America/Chicago date '+%Z %H:%M')
+PST=$(TZ=America/Los_Angeles date '+%Z %H:%M')
+
+echo "$HOME"
+echo "$HOME"
+echo

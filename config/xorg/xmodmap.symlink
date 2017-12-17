@@ -1,0 +1,10 @@
+!clear Lock
+! Caps lock
+!keycode 66 = Escape
+! Escape
+!keycode 9 = Caps_Lock
+remove Lock = Caps_Lock
+remove Control = Control_L
+keysym Caps_Lock = Control_L
+add Lock = Caps_Lock
+add Control = Control_L

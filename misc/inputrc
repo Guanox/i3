@@ -1,0 +1,11 @@
+# vi specific
+set editing-mode vi
+set keymap vi-command
+set show-mode-in-prompt on
+
+set bell-style none
+
+#"e": "ie"
+#"l": "il"
+#"g": "ig"
+#"m": "im"

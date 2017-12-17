@@ -1,0 +1,87 @@
+#!/bin/bash
+
+####################################################
+# CREATION     : 2016-01-22
+# MODIFICATION : 2017-03-04
+
+# I3block's blocklet which:
+# - Display volume
+# - Increase/decrease volume with the mouse wheel
+# - Open pavucontrol with middle mouse click
+# - Use 'USE_SYM' var to display volume icons
+#
+# Requirements:
+# - pactl
+#
+# Optional:
+# - pavucontrol
+#
+####################################################
+
+USE_SYM=true
+USE_COLOR=true
+
+NORMAL_COLOR="#C9CCDB"
+MUTED_COLOR="#D82871"
+
+LOW=" "
+MEDIUM=" "
+MAX=" "
+
+color=$NORMAL_COLOR
+
+function create_text() {
+    local symbol=$1
+    local percent=$2
+
+    text="$percent%"
+
+    if $USE_SYM; then
+        text="$symbol $text"
+    fi
+
+    echo $text
+}
+
+# i3blocks controls
+case $BLOCK_BUTTON in
+    1) pactl set-sink-mute 0 toggle;;   # left click
+    2) pavucontrol ;;
+    4) pactl set-sink-volume 0 '+5%';;  # wheel up
+    5) pactl set-sink-volume 0 '-5%';;  # wheel down
+esac
+
+# Use `let` to get an integer
+let vol=$(pactl list sinks | awk -F '/' '/^\s*Volume/{print $2}' | tr -d '% ' | head -n 1)
+muted=$(pactl list sinks | awk -F ':' '/^\s*Mute/{print $2}' | tr -d ' ')
+
+# find out what symbol to use
+if [ "$vol" -le 10 ]; then
+    symbol=$LOW
+elif [ $vol -le 45 ]; then
+    symbol=$MEDIUM
+else
+    symbol=$MAX
+fi
+
+text=$(create_text $symbol $vol $muted)
+
+if [[ "$muted" == "yes" ]]; then
+    if $USE_COLOR; then
+        color=$MUTED_COLOR
+    fi
+fi
+
+# Output in json
+cat <<EOF
+{
+    "full_text": "${text}",
+    "color": "$color",
+    "background": "",
+    "border": "",
+    "border_left": 0,
+    "border_right": 0,
+    "border_up": 0,
+    "border_bottom": 0
+}
+EOF

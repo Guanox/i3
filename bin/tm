@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+
+# abort if we're already inside a TMUX session
+[ "$TMUX" = "" ] || exit 0
+
+PS3="Choose an option: "
+
+# Check if tmux is running, if it is
+# then add running sessions to array
+if [ "$(pidof tmux)" ]; then
+    sessions=($(tmux list-sessions -F "#S"))
+fi
+
+# Check whether sessions where found, if that's the case
+# then set options
+if [ ! -z "${sessions+x}" ]; then
+    options=("New" "Attach" "Kill" "Kill All")
+    echo "Available sessions"
+    echo "------------------"
+    for session in "${sessions[@]}"
+    do
+        echo "$session"
+    done
+    echo " "
+else
+    echo "No running sessions!"
+    echo " "
+    PS3=""
+    read -p "Enter new session name: " SESSION_NAME
+    echo "tmux -2 new -s $SESSION_NAME"
+    tmux -2 new -s "$SESSION_NAME"
+
+    exit
+fi
+
+PS3="prompt : "
+
+# present menu for user to choose what to do
+select opt in "${options[@]}"
+do
+    PS3="Choose a session: "
+    case $opt in
+        "New")
+            read -p "Enter new session name: " SESSION_NAME
+            echo "tmux -2 new -s $SESSION_NAME"
+            tmux -2 new -s "$SESSION_NAME"
+
+            break
+            ;;
+
+        "Attach")
+            select session in "${sessions[@]}"
+            do
+                echo "tmux -2 attach -t $session"
+                tmux -2 attach -t "$session"
+                break 2
+            done
+
+            break
+            ;;
+
+        "Kill")
+            select session in "${sessions[@]}"
+            do
+                echo "tmux kill-session -t $session"
+                tmux kill-session -t "$session"
+                break 2
+            done
+
+            break
+            ;;
+        "Kill All")
+            echo "tmux kill-server"
+            tmux kill-server
+
+            break
+            ;;
+    esac
+done

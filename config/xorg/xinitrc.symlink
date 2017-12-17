@@ -1,0 +1,15 @@
+xrdb ~/.Xresources
+/usr/bin/setxkbmap -option "caps:swapescape"
+. ~/.xsessionrc
+sh ~/.fehbg
+
+xset r rate 200 30
+
+case $WM in
+i3)
+    exec i3
+    ;;
+*)
+    exec i3
+    ;;
+esac

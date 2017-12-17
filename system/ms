@@ -1,0 +1,69 @@
+#!/usr/bin/env python
+
+from subprocess import call, check_output
+import getopt, sys
+
+channels_map = { "starcs":"http://twitch.com/starladder_cs_en" }
+useChat = False
+channel = None
+isValid = True
+
+def showFavorites():
+    for stream in channels_map:
+        print ('%-20s %s' % (stream, channels_map[stream]))
+
+def openStream(channel):
+    if channels_map.get(channel, None) != None:
+        channel = channels_map[channel]
+
+    print ("streaming " + channel)
+
+    options = " 720p60 --player mpv"
+    redir = " > /dev/null 2>&1 "
+
+    call("streamlink " + channel + options + redir + "&", shell=True)
+
+def openChat(channel):
+    args = " -login -connect -channel " + channel
+    # redir = " > /dev/null 2>&1 &"
+    # call("chatty" + args + redir, shell=True)
+
+def showUsage():
+    print ('stream <channel>')
+
+if len(sys.argv) == 1:
+    showUsage()
+    sys.exit()
+
+try:
+    opts, args = getopt.getopt(sys.argv[1:],"hfc",["help", "favorites", "chat"])
+
+except (getopt.GetoptError, err):
+    print (str(err))
+    sys.exit()
+
+channel = sys.argv[1]
+
+if channel is None or channel in ['-c','--chat','-f','--favorites','-h','--help']:
+    isValid = False
+
+for option, argument in opts:
+    if option in ("-h", "--help"):
+        showUsage()
+        sys.exit()
+
+    elif option in ("-f", "--favorites"):
+        showFavorites()
+        sys.exit()
+
+    elif option in ("-c", "--chat"):
+        useChat = True
+
+    else:
+        assert False, "Unhandled Option"
+
+if isValid:
+    openStream(channel)
+    if useChat == True:
+        print ("Opening chat...")
+        openChat(channel)

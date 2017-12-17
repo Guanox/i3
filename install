@@ -1,0 +1,94 @@
+#!/usr/bin/env bash
+
+####################################################
+# CREATION     : 2016-03-06
+# MODIFICATION : 2017-12-02
+#
+# Bootstrap install
+# - installs essential programs
+#
+####################################################
+
+package_manager=""
+BACKUP_DIR="./backup"
+
+declare -A installers=( [pacman]="pacman -S" [apt]="apt install -y" )
+
+function install () {
+    local program=$1
+    local installer=${installers["$package_manager"]}
+
+    echo -e "\nInstalling ${program}..."
+
+    bash -c "$installer $program"
+}
+
+function link()
+{
+    local file="$1"
+    local target="$2"
+
+    echo -e "\nLinking $file to $target"
+
+    # file exists and its not a link to my own config file
+    if [ -e "$file" ] && [ ! "$(readlink -- "$file")" = "$target" ]; then
+        mv "$file" "$BACKUP_DIR"
+    fi
+
+    ln -fsn "$target" "$file"
+}
+
+function setup_vim_plugins()
+{
+    git clone git@github.com:VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
+    nvim -c 'PluginInstall' -c 'qa!'
+}
+
+function locate_config_files()
+{
+    directory=$1
+
+    TARGETS=$(find -H "$directory" -maxdepth 3 -name '*.symlink')
+    for target in $TARGETS ; do
+        file="$HOME/.$( basename "$target" ".symlink" )"
+        link "$file" "$target"
+    done
+}
+
+function main() {
+    if [[ ${#*} = 0 ]]; then
+        echo "please supply package param"
+        exit 2
+    fi
+
+    if [[ ! ${installers[$1]+1} ]]; then
+        echo "please supply pacman or apt"
+        exit 2
+    fi
+
+    if [ $(id -u) -ne 0 ]; then
+        echo -e "Intalling requires root privileges" 1>&2
+        exit 2
+    fi
+
+    package_manager=$1
+
+    echo -e "\nSetting up bash configuration"
+    locate_config_files "$(pwd)/config/bash"
+
+    echo -e "\nInstalling Programs"
+    install "curl"
+    install "htop"
+
+    install "git"
+    locate_config_files "$(pwd)/config/git"
+
+    install "tmux"
+    locate_config_files "$(pwd)/config/tmux"
+
+    install "neovim"
+    locate_config_files "$(pwd)/config/vim"
+    vim -c 'PluginInstall' -c 'qa!'
+}
+
+main "$@"

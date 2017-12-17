@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+
+####################################################
+# CREATION     : 2016-10-09
+# MODIFICATION : 2017-04-23
+#
+# Script to handle wallpapers which:
+# - Set wallpaper from file
+# - Set random wallpaper
+#
+# Requirements:
+# - feh
+#
+####################################################
+
+WALLPAPER_DIR=~/images/wallpapers
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+function usage ()
+{
+    echo "Usage :  $(basename "$0") [options]
+
+    Options:
+    -h|help             Display this message
+    -s|set FILE         Set wallpaper
+    -r|random           Set random wallpaper"
+}
+
+function exists()
+{
+    local wallpaper=$1
+
+    if [[ ! -f $wallpaper ]] && [[ ! -f $WALLPAPER_DIR/$wallpaper ]] ; then
+        echo "The wallpaper '$(basename $wallpaper)' does not exist"
+        exit 1
+    fi
+
+    echo $(basename $wallpaper)
+}
+
+function set_random()
+{
+    files=($WALLPAPER_DIR/*)
+    index=$((RANDOM % ${#files[@]}))
+
+    set_wallpaper "${files[index]}"
+}
+
+function set_wallpaper()
+{
+    wallpaper=$(exists "$1")
+
+    feh --bg-scale "$WALLPAPER_DIR/$wallpaper" &>/dev/null
+}
+
+function main()
+{
+    while getopts ":hrs:" opt
+    do
+        case $opt in
+
+            h|help     	)  usage; exit 0            ;;
+
+            s|set       )  set_wallpaper "$OPTARG"  ;;
+
+            r|random    )  set_random               ;;
+
+            :			)  echo -e "\n    Option -$OPTARG requires an argument.\n" >&2; usage; exit 1 ;;
+
+            * 			)  echo -e "\n    Option -$OPTARG does not exist.\n" >&2; usage; exit 1   ;;
+
+        esac
+    done
+    shift $((OPTIND-1))
+}
+
+main "$@"

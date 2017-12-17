@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+
+
+####################################################
+# CREATION     : 2016-01-02
+# MODIFICATION : 2017-03-05
+#
+# Description:
+# - Runs programs
+# - Focusses programs if already running
+#
+# Requirements:
+# - i3
+#
+####################################################
+
+declare -A id_map=(
+[speedcrunch]=SpeedCrunch
+[google-chrome-stable]=Google-chrome
+[android-studio]=jetbrains-studio
+[spotify]=Spotify
+[slack]=Slack
+)
+
+# Tries to focus a x window
+function try_focus() {
+    local value=$1;
+    local prop=$2;
+
+    if [[ $(i3-msg "[$prop=$value] focus") = '[{"success":true}]' ]]; then echo 1; else echo 0; fi
+}
+
+function run_program() {
+    local program=$1
+    i3-msg "exec $program" &>/dev/null
+}
+
+function main() {
+    local program="$1"
+    local prop="$2"
+
+    # check that ensures that id_map contains the program key
+    if [[ ${id_map[$program]+1} ]]; then
+        id_value=${id_map[$program]}
+
+        focus="$(try_focus "$id_value" "$prop")"
+
+        if [[ $focus = 0 ]]; then
+            run_program $program
+        fi
+    fi
+}
+
+main "$@"

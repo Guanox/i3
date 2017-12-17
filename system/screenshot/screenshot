@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+
+####################################################
+# CREATION     : 2016-10-08
+# MODIFICATION : 2016-10-08
+#
+# Screenshot script which:
+# - Does full, selection, window screenshots
+# - Saves screenshot to $SAVE_DIR
+#
+# Requirements:
+# - scrot
+#
+# Optional:
+# - xsel / xclip
+#
+####################################################
+
+UPLOAD=false
+SAVE_DIR=~/images/screenshots
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+action='full'
+
+#  Description.
+function create_filename() {
+    local prefix="$1_"
+    local suffix='.png'
+
+    echo "$prefix$(date +%Y-%m-%d_%H:%M:%S)$suffix"
+}
+
+
+function usage ()
+{
+    echo "Usage :  $(basename $0) [options]
+    Calling script without options produces full screenshot. The -u option
+    causes the file to be uploaded to imgur and the url is copied to clipboard.
+
+    Options:
+    -s|selection    Selection screenshot
+    -w|window       Active window screenshot
+    -u|upload       Upload screenshot to imgur
+    -h|help         Display this message"
+
+}
+
+#-----------------------------------------------------------------------
+#  Handle command line arguments
+#-----------------------------------------------------------------------
+
+while getopts ":hvfswu" opt
+do
+    case $opt in
+
+        h|help     	)  usage; exit 0   ;;
+        s|selection )  option='-s'; action='selection' ;;
+        w|window  	)  option='-u'; action='window' ;;
+        u|upload  	)  UPLOAD=true ;;
+
+        * 			)  echo -e "\n  Option does not exist : $OPTARG\n" >&2; usage; exit 1   ;;
+
+    esac
+done
+shift $(($OPTIND-1))
+
+file=$SAVE_DIR/$(create_filename $action)
+
+scrot $option $file
+
+if [[ $UPLOAD = true ]]; then
+    url=$($SCRIPT_DIR/imgur $file)
+
+    { which xsel &>/dev/null && xsel --input --clipboard <<< $url; } \
+        || { which xclip &>/dev/null && xclip -selection clipboard <<< $url; }
+fi

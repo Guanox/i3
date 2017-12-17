@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+VBOX_DIR=~/vms/vbox
+
+if [ -e "$VBOX_DIR" ]; then
+    for vm in $(grep '^[^#]' "$VBOX_DIR/auto"); do
+        VBoxManage startvm "$vm" --type headless
+    done
+fi
+
+

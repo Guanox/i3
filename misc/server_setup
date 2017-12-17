@@ -1,0 +1,36 @@
+sudo apt install apache2
+sudo apt install libapache2-mod-php
+sudo apt install php
+sudo apt install php-mysql
+sudo a2enmod rewrite
+
+# virtual host config
+<VirtualHost *:80>
+    DocumentRoot "/home/guano/Src/PhpstormProjects/linga-server/src/public"
+    ServerName www.linga.dev
+
+    # Other directives here
+    <Directory /home/guano/Src/PhpstormProjects/linga-server>
+        AllowOverride All
+        Require all granted
+    </Directory>
+</VirtualHost>
+
+<VirtualHost *:80>
+    DocumentRoot "/home/guano/Src/PhpstormProjects/smoodle-server/src/public"
+    ServerName www.smoodle.dev
+
+    # Other directives here
+    <Directory /home/guano/Src/PhpstormProjects/smoodle-server>
+        AllowOverride All
+        Require all granted
+    </Directory>
+</VirtualHost>
+
+# import databases
+mysql -u root -p DATABASE < file.sql
+
+# create logging dirs under logs/APPNAME.log
+sudo chmod 777 APPNAME.log
+
+sudo service apache2 restart

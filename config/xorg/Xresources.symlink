@@ -1,0 +1,62 @@
+URxvt*termName:             rxvt-unicode-256color
+URxvt.font:                 xft:Source Code Pro for Powerline:size=12
+
+URxvt.scrollBar:            false
+URxvt.scrollTtyOutput:      false
+URxvt.scrollWithBuffer:     true
+URxvt.scrollTtyKeypress:    true
+URxvt.saveLines:            8192
+URxvt.url-launcher:         /usr/bin/google-chrome
+URxvt.loginShell:           true
+URxvt.fading:               0
+URxvt.internalBorder:       0
+URxvt.externalBorder:       0
+URxvt.secondaryScreen:      1
+URxvt.secondaryScroll:      0
+URxvt.depth:                32
+URxvt.letterSpace:          true
+
+! colours
+URxvt*transparent:          true
+URxvt*shading:              20
+URxvt*background:           #101218
+URxvt*foreground:           #d1d4e0
+URxvt*cursorColor:          #d1d4e0
+URxvt*scrollColor:          #d1d4e0
+URxvt*highlightColor:       #252936
+URxvt*highlightTextColor:   #C0C5CE
+
+URxvt*color0:               #101218
+URxvt*color1:               #ee829f
+URxvt*color2:               #a5ffe1
+URxvt*color3:               #ffefcc
+URxvt*color4:               #97bbf7
+URxvt*color5:               #c0b7f9
+URxvt*color6:               #97e0ff
+URxvt*color7:               #d1d4e0
+URxvt*color8:               #7780a1
+URxvt*color9:               #ee829f
+URxvt*color10:              #a5ffe1
+URxvt*color11:              #ffefcc
+URxvt*color12:              #ffe7b3
+URxvt*color13:              #97bbf7
+URxvt*color14:              #c0b7f9
+URxvt*color15:              #97e0ff
+URxvt*color16:              #ffffff
+
+URxvt*color17:              #f99170
+URxvt*color18:              #fcc09e
+URxvt*color19:              #1f222d
+URxvt*color20:              #252936
+URxvt*color21:              #C0C5CE
+URxvt*color22:              #C9CCDB
+
+!! ------------------------------------------------------------------------------
+!! ROFI Color theme
+!! ------------------------------------------------------------------------------
+!rofi.color-enabled:         true
+!rofi.color-normal:          argb:00000000,  #D8DEE9 , argb:00000000,  #77AADD ,  #1B2B34
+!rofi.color-urgent:          argb:00000000,  #F99157 , argb:00000000,  #F99157 ,  #1B2B34
+!rofi.color-active:          argb:00000000,  #6699CC , argb:00000000,  #6699CC ,  #1B2B34
+!rofi.color-window:          argb:ee222222,  #77AADD , #77AADD
+!rofi.separator-style:       solid

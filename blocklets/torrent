@@ -1,0 +1,8 @@
+#!/usr/bin/env python
+
+import transmissionrpc
+
+try:
+    client = transmissionrpc.Client()
+except Exception as e:
+    print (e.message, e.original)

@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+
+
+####################################################
+# CREATION     : 2016-01-22
+# MODIFICATION : 2017-05-31
+#
+# Description:
+# - I3blocks song blocklet
+# - Shows current artist and song
+# - Green text color signal acive song playback
+# - Middleclick toggles song title display
+#
+# Requirements:
+# - playerctl
+#
+####################################################
+
+SCRIPT_DIR="$(dirname "$0")"
+SHOW_ARTIST=$(tail -n 1 "$0")
+PLAY_COLOR="#0BBA7C"
+LABEL="♫"
+
+color="#C9CCDB"
+
+function toggle_title() {
+    SHOW_ARTIST=$([ "$SHOW_ARTIST" == 1 ] && echo 0 || echo 1)
+
+    # Yes I know this is impossible to debug
+    sed "\$s/.*/$SHOW_ARTIST/" "$0" > "$SCRIPT_DIR/temp"
+    rm "$0"
+    mv "$SCRIPT_DIR/temp" "$0"
+    chmod u+x "$0"
+}
+
+case $BLOCK_BUTTON in
+    1) playerctl next ;;      # left click
+    2) toggle_title ;;        # middle click
+    3) playerctl previous ;;  # right click
+esac
+
+artist=$(playerctl metadata artist)
+title=$(playerctl metadata title)
+
+text="$LABEL"
+
+if [ "$SHOW_ARTIST" = "1" ]; then
+    text="$text $artist - $title"
+else
+    text="$text $title"
+fi
+
+# true when music server is started
+if [[ $(playerctl status) = "Playing" ]]; then
+    color="$PLAY_COLOR"
+fi
+
+cat <<EOF
+{
+    "full_text": "$text",
+    "color": "$color",
+    "background": "",
+    "border": "",
+    "border_left": 0,
+    "border_right": 0,
+    "border_up": 0,
+    "border_bottom": 0
+}
+EOF
+
+exit
+
+0

@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+
+# default values
+let temp_low=30;
+let temp_warn=70;
+let temp_crit=85;
+
+color_low="#81CAE6"
+color_warn="#FFB347"
+color_crit="#C23B22"
+
+color="#C9CCDB"
+
+temp=$(acpi -t | perl -n -e '/(\d*)\.\d/ && print $1')
+
+text="$temp°C";
+
+if [[ "$temp" -gt "$temp_crit" ]]; then
+    color="$color_crit"
+elif [[ "$temp" -gt "$temp_warn" ]]; then
+    color="$color_warn"
+elif [[ "$temp" -le "$temp_low" ]]; then
+    color="$color_low"
+fi
+
+cat <<EOF
+{
+    "full_text": "${text}",
+    "color": "$color",
+    "background": "",
+    "border": "",
+    "border_left": 0,
+    "border_right": 0,
+    "border_up": 0,
+    "border_bottom": 0
+}
+EOF

@@ -1,0 +1,8 @@
+#!/bin/sh
+
+for m in $(cat /proc/modules | cut -d' ' -f1); do
+    for fw in $(sudo modinfo -F firmware $m); do
+        pk=$(apt-file --package-only search $fw | cut -d' ' -f1)
+        echo "firmware $fw in package $pk"
+    done
+done

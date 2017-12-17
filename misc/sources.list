@@ -1,0 +1,40 @@
+#####################
+## Debian Unstable ##
+#####################
+deb http://httpredir.debian.org/debian/ unstable main contrib non-free
+
+####################
+## Debian Testing ##
+####################
+#deb http://httpredir.debian.org/debian/ testing main contrib non-free
+#deb http://security.debian.org/ testing/updates main contrib non-free
+#deb http://httpredir.debian.org/debian/ testing-proposed-updates main contrib non-free
+
+###################
+## Debian Stable ##
+###################
+# Stable
+#deb deb http://httpredir.debian.org/debian/ jessie main contrib non-free
+# Stable Sources
+#deb-src http://http.us.debian.org/debian/ squeeze main contrib non-free
+
+# Security Updates  http://www.debian.org/security/
+#deb http://security.debian.org/ jessie/updates main contrib non-free
+
+# Jessie-updates
+#deb http://http.us.debian.org/debian/ jessie-updates main contrib non-free
+
+# Debian Stable Backports
+# For information visit - http://backports.debian.org/
+# deb http://backports.debian.org/debian-backports jessie-backports main contrib non-free
+# Squeeze-backports-sloppy http://backports.debian.org/news/squeeze-backports-sloppy_created/
+# deb http://backports.debian.org/debian-backports jessie-backports-sloppy main contrib non-free
+
+# Backports for stretch when it get's released
+# For more info see Debian -- News -- Backports integrated in the main archive - http://www.debian.org/News/2013/20130320
+# deb http://ftp.debian.org/debian/ stretch-backports main contrib non-free
+
+# Debian -- The "proposed-updates" mechanism - http://www.debian.org/releases/proposed-updates
+# Also see http://wiki.debian.org/StableProposedUpdates
+# deb ftp://ftp.debian.org/debian jessie-proposed-updates main
+############################ End Debian Stable ##############################

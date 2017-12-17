@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+
+####################################################
+# CREATION     : 2016-01-22
+# MODIFICATION : 2016-10-02
+#
+# Description:
+# - Displays battery percentage
+#
+# Requirements:
+# - acpi
+# - awk
+#
+####################################################
+
+ICON="";
+CHAR_ICON="";
+
+COLOR="#C9CCDB"
+WARN_COLOR="#FFB347"
+CRIT_COLOR="#D82871"
+
+WARN_LEVEL="15"
+CRIT_LEVEL="5"
+
+# get batteries (the outer parenthesis makes sure ' ' is array delimiter)
+batteries=($(acpi | awk ' /Battery/ {printf("%s%d ", $3, $4)} '))
+
+for battery in "${batteries[@]}" ; do
+    #split battery string into state and percentage
+    battery=(${battery//,/ })
+
+    b_stat="${battery[0]}"
+    b_val="${battery[1]}"
+
+    if [[ "$b_stat" = "Charging" ]]; then
+        ICON="$CHAR_ICON"
+    fi
+
+    total=$((b_val + total))
+done
+
+percent=$((total / ${#batteries[@]}))
+
+text="$ICON $percent%"
+
+if [[ $percent -le $CRIT_LEVEL ]]; then
+    COLOR="$CRIT_COLOR"
+elif [[ $percent -le $WARN_LEVEL ]]; then
+    COLOR="$WARN_COLOR"
+fi
+
+cat <<EOF
+{
+    "full_text": "${text}",
+    "color": "${COLOR}",
+    "background": "",
+    "border": "",
+    "border_left": 0,
+    "border_right": 0,
+    "border_up": 0,
+    "border_bottom": 0
+}
+EOF

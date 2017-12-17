@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+# NOTICE: This script is used by acpid to handle the brightness function keys
+
+# files that define max brightness and current brightness
+curr_brightness=/sys/class/backlight/intel_backlight/brightness
+max_brightness=/sys/class/backlight/intel_backlight/max_brightness
+
+# min max and current brightness readonly variables
+declare -r MIN_BRIGTHNESS=5
+declare -r MAX_BRIGHTNESS=$(<$max_brightness)
+declare -r CURR_BRIGHTNESS=$(<$curr_brightness)
+
+operation=$1
+value=$2
+
+if [[ $operation = "+" ]]; then
+    # add one to get roof
+    new_brightness=$((value+1+CURR_BRIGHTNESS))
+elif [[ $operation = "-"  ]]; then
+    new_brightness=$((CURR_BRIGHTNESS-value))
+else
+    echo "operation not understood must be + or -"
+fi
+
+if [[ $new_brightness -lt $MIN_BRIGHNESS ]]; then
+    new_brightness=5
+elif [[ $new_brightness -gt $MAX_BRIGHTNESS ]]; then
+    new_brightness=$MAX_BRIGHTNESS
+fi
+
+# write updated brightness value to brightness file
+echo $new_brightness > $curr_brightness
+
+# make i3blocks update
+pkill -RTMIN+8 i3blocks

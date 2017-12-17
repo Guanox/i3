@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+
+####################################################
+# CREATION     : 2016-07-30
+# MODIFICATION : 2016-07-30
+#
+# Description:
+# - Displays wifi or lan
+# - Displays wifi or lan
+#
+# Optional:
+# - xsel
+#
+####################################################
+
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+MIP="$(dirname $SCRIPT_DIR)/mip"
+
+case $BLOCK_BUTTON in
+    1)
+        $MIP -i | tr -d '\n' | xsel -i
+        echo "INTERNAL IP COPIED"
+        ;;
+    2)  urxvt -e nmtui ;;
+    3)
+        $MIP -e | tr -d '\n' | xsel -i
+        echo "EXTERNAL IP COPIED"
+        ;;
+esac
+
+use_speed="false"
+bin="$(command -v /sbin/iwgetid /dev/null 2>&1)"
+state_eth="$(</sys/class/net/eth0/operstate)"
+state_wlan="$(</sys/class/net/wlan0/operstate)"
+
+if [ $state_eth = "up" ]; then
+    state="up"
+    label=""
+    interface="eth0"
+elif [ "$state_wlan" = "up" ]; then
+    state="up"
+    label=""
+    interface="wlan0"
+else
+    state="down"
+    label=""
+fi
+
+if [ "$state" != "up" ]; then
+    echo "$label"
+    echo
+    echo "#696969"
+    exit 0
+fi
+
+# set text
+if [ -n "$bin" ] && [ "$interface" != "eth0" ]; then
+    text="$label"" ""$(/sbin/iwgetid -r)"
+else
+    text="$label"" ""$(ip route get 8.8.8.8 | awk '{ print $NF; exit }')"
+fi
+
+echo -n "$text"
+
+if [ "$use_speed" = "true" ]; then
+    if [ "$interface" = "eth0" ]; then
+        speed="$(echo /sys/class/net/$interface/speed 2> /dev/null)"
+    else
+        speed="$(/sbin/iwconfig | awk '/Bit Rate/ {print $2}')"
+        speed=${speed#"Rate="}
+    fi
+
+    echo " ($speed Mbits/s)" || echo
+fi

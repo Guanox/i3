@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+if [[ $1 = "toggle" ]]; then
+    pactl set-sink-mute 0 toggle
+else
+    pactl set-sink-volume 0 "$1"
+fi
+
+pkill -RTMIN+7 i3blocks

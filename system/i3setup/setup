@@ -1,0 +1,182 @@
+#!/usr/bin/env bash
+
+####################################################
+# CREATION     : 2016-01-01
+# MODIFICATION : 2016-10-05
+#
+# Description:
+# - Detects screens
+# - Arranges screen configuration
+# - Arranges workspace configuration
+#
+# Requirements:
+# - i3
+# - xrandr
+# - grep
+# - sed
+#
+####################################################
+
+SCRIPT_DIR="$( dirname "$0" )"
+OWNER=$(stat -c "%U" "$0")
+HOME="/home/$OWNER"
+CONFIG_FILE="current.conf"
+
+###############################################
+#  EXTRACT WORKSPACES AND CONNECTED MONITORS  #
+###############################################
+
+get_workspace_data() {
+    echo "Getting workspace data...." >&2
+
+    IFS_BACKUP=$IFS
+    IFS=$'\n'
+
+    WORKSPACES=($(grep -ioP '(?<=set \$workspace)[^$]*' $HOME/.i3/config | grep -ioP '(?<=").*(?=")' ) )
+    ACTIVE_WORKSPACES=($(i3-msg -t get_workspaces | grep -ioP '(?<=name":")[^"]*'))
+    IFS=$IFS_BACKUP
+
+    FOCUSED_WORKSPACE=$(i3-msg -t get_workspaces | grep -ioP '(?<=name":")[^"]*(?=","visible":true,"focused":true)')
+}
+
+get_connected_screens() {
+    echo "Detecting connected monitors...." >&2
+
+    SCREENS=($(xrandr | grep -ioP "^[^ ]*(?= connected)" | tail -n +1))
+}
+
+
+###################
+#  SETUP SCREENS  #
+###################
+
+get_placement () {
+    for relation_setting in $1; do
+        relation=(${relation_setting//:/ })
+        placement_string="$placement_string${relation[0]} ${SCREENS[${relation[1]}]} "
+    done
+
+    echo "$placement_string"
+}
+
+make_xrandr_string() {
+    local xrandr_string=""
+    for (( i = 0; i < SCREEN_NUM; i++ )); do
+        placement_string=$(get_placement "${PLACEMENT_SETTING[i]}")
+
+        xrandr_string="$xrandr_string--output ${SCREENS[i]} "${OPTION_SETTING[i]}" $placement_string"
+    done
+
+    echo "$xrandr_string"
+}
+
+setup_screens() {
+    echo -e "\nPlacing screens...." >&2
+
+    local SCREEN_NUM=${#SCREENS[@]}
+    args=$(make_xrandr_string)
+
+    echo -e "Calling xrandr $args" >&2
+    xrandr $args
+}
+
+######################
+#  SETUP WORKSPACES  #
+######################
+
+edit_config() {
+    sed -in "s/\(workspace \$workspace$NUMBER output\).*/\1 $OUTPUT/g" "$HOME/.i3/config"
+}
+
+configure_workspace() {
+    local WORKSPACE=$1 OUTPUT=$2 NUMBER=$3
+
+    # if output is not specified then only one screen is connected
+    if [[ ! ($OUTPUT) ]]; then OUTPUT=${SCREENS[0]} ; fi
+
+    edit_config
+
+    echo "Moving workspace \"$WORKSPACE\" to output \"$OUTPUT\"" >&2
+    i3-msg "workspace $WORKSPACE;move workspace to output $OUTPUT" > /dev/null
+}
+
+setup_workspaces() {
+    echo -e "\nPlacing workspaces...." >&2
+
+    SCREEN_NUM=$((${#SCREEN_EXTRA[@]} + 1))
+
+    for (( i = 0; i < ${#WORKSPACE_SETTING[@]}; i++ )); do
+        configure_workspace "${WORKSPACES[(($i))]}" "${SCREENS[${WORKSPACE_SETTING[(($i))]}]}" $((i+1))
+    done
+}
+
+function usage ()
+{
+    echo "Usage :  $(basename "$0") [options]
+    Options:
+    -c|config   CONFIG      Set standard configuration
+    -s|start    WORKSPACE   Start here after setup
+    -h|help                 Display this message"
+}
+
+set_config() {
+    echo -e "New configuration $1\n"
+
+    ln -sf "$SCRIPT_DIR/$1.conf" "$SCRIPT_DIR/$CONFIG_FILE"
+}
+
+read_settings () {
+    echo "Reading config...." >&2
+    source "$SCRIPT_DIR/$CONFIG_FILE"
+}
+
+
+#-----------------------------------------------------------------------
+#  Handle command line arguments
+#-----------------------------------------------------------------------
+
+while getopts ":hvs:c:" opt
+do
+    case $opt in
+
+        h)  usage; exit 0   ;;                  # Help
+
+        s)  start_workspace=$OPTARG ;;          # Start
+
+        c)  set_config "$OPTARG" ;;               # Config
+
+        :)  echo -e "\nOption -$OPTARG requires an argument.\n" >&2; usage; exit 1 ;;
+
+        *)  echo -e "\nInvalid option: -$OPTARG\n" >&2; usage; exit 1 ;;
+
+    esac
+done
+shift $((OPTIND-1))
+
+# reset screens?
+xrandr --auto
+
+get_workspace_data
+
+get_connected_screens
+
+read_settings
+
+setup_screens
+
+setup_workspaces
+
+if [[ ! ($start_workspace) ]]; then # Caller did not choose start workspace
+    start_workspace="$FOCUSED_WORKSPACE"
+fi
+
+echo -e "\nReloading i3 config" >&2
+i3-msg "reload" &>/dev/null
+
+xset r rate 200 30
+
+# clean file confign
+rm $HOME/.i3/confign
+
+echo -e "\nPutting you on workspace \"$start_workspace\", enjoy :^)" >&2
+i3-msg workspace "$start_workspace" > /dev/null

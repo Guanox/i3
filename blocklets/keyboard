@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+####################################################
+# CREATION     : 2016-10-02
+# MODIFICATION : 2016-10-02
+#
+# Description:
+# - Shows current keyboard layout
+#
+# Requirements:
+# - awk
+#
+####################################################
+
+case $BLOCK_BUTTON in
+    2) . ~/.bin/system/swapkeylayout; ;;
+esac
+
+setxkbmap -query | awk ' /^layout/{layout=$2} END{printf("%s",toupper(layout))}'

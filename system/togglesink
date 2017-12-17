@@ -1,0 +1,12 @@
+#!/bin/sh
+
+index=$(pacmd list-sinks | awk '/index/ {print $3}')
+sink=$(pactl list sinks | awk '/Active Port:/ {print $3}')
+
+if [ "$sink" = "analog-output-speaker" ]; then
+    pacmd set-sink-port "$index" "analog-output-headphones"
+else
+    pacmd set-sink-port "$index" "analog-output-speaker"
+fi
+
+pactl set-sink-mute "$index" 0

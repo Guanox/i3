@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+####################################################
+# CREATION     : 2016-09-13
+# MODIFICATION : 2016-10-01
+#
+# Description:
+# - Calculates and displays brightness percent
+#
+# Optional:
+# - redshift-gtk
+#
+####################################################
+
+MIN_BRIGHTNESS=5
+
+case $BLOCK_BUTTON in
+    2) redshift-gtk ;;   # middle click
+esac
+
+MAX=$(</sys/class/backlight/intel_backlight/max_brightness)
+CURRENT=$(</sys/class/backlight/intel_backlight/brightness)
+
+# calculate brigthness percentage
+PERCENT=$(( (100*((CURRENT-MIN_BRIGHTNESS)) + MAX/2) / ((MAX-MIN_BRIGHTNESS)) ))
+
+echo "$PERCENT%"
