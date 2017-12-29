@@ -1,8 +1,11 @@
 core i3 programs:
     - i3
+    - dunst (notifikation)
+    - nm-applet (network manager)
+    - rofi
     - polybar
     - i3lock-fancy
 
-desktop env programs:
-    - rofi
+
+
 
